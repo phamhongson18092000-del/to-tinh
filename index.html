@@ -35,6 +35,7 @@
       box-shadow: 0 18px 40px rgba(0,0,0,0.18);
       padding:22px;
       position:relative;
+      z-index: 1;
     }
     .card{
       background:var(--card);
@@ -94,6 +95,10 @@
       box-shadow: 0 10px 18px rgba(0,0,0,0.12);
       user-select:none;
       -webkit-tap-highlight-color: transparent;
+      z-index: 5;
+      position: absolute;
+      top:0;
+      height:52px;
     }
     button:hover{ transform: translateY(-2px); filter: brightness(1.02); }
     button:active{ transform: translateY(0px) scale(0.99); }
@@ -101,20 +106,14 @@
     .yes{
       background:var(--yes);
       color:#fff;
-      position:absolute;
       left:0;
-      top:0;
       width:48%;
-      height:52px;
     }
     .no{
       background:var(--no);
       color:#333;
-      position:absolute;
-      right:0;
-      top:0;
+      left:52%;
       width:48%;
-      height:52px;
     }
 
     .mini{
@@ -141,6 +140,12 @@
       color:#777;
       text-align:center;
     }
+    .foot{
+      margin-top:14px;
+      text-align:center;
+      font-size:12px;
+      color:rgba(0,0,0,0.45);
+    }
 
     /* hearts */
     .heart{
@@ -148,23 +153,16 @@
       left:0;
       top:0;
       font-size:18px;
-      pointer-events:none;
+      pointer-events:none; /* không chặn click nút */
       animation: floatUp 2.8s linear forwards;
       opacity:0.95;
       filter: drop-shadow(0 6px 10px rgba(0,0,0,0.12));
+      z-index: 0;
     }
     @keyframes floatUp{
       0%   { transform: translate(var(--x), var(--y)) scale(0.9); opacity:0.0;}
       10%  { opacity:0.95; }
       100% { transform: translate(calc(var(--x) + var(--drift)), calc(var(--y) - 280px)) scale(1.35); opacity:0; }
-    }
-
-    /* small footer */
-    .foot{
-      margin-top:14px;
-      text-align:center;
-      font-size:12px;
-      color:rgba(0,0,0,0.45);
     }
   </style>
 </head>
@@ -189,24 +187,21 @@
       </div>
 
       <div class="btns" id="btnArea">
-        <button class="yes" id="yesBtn">💖 Đồng ý</button>
-        <button class="no" id="noBtn">💔 Không đồng ý</button>
+        <button class="yes" id="yesBtn" type="button">💖 Đồng ý</button>
+        <button class="no" id="noBtn" type="button">💔 Không đồng ý</button>
       </div>
 
-      <div class="hint">Nếu em bấm “Không đồng ý” mà nó chạy… thì đó là vì anh… không muốn nghe 😄</div>
+      <div class="hint">Trên máy tính, nút “Không đồng ý” sẽ hơi “chạy trốn” 😄</div>
       <div class="foot">Made with ❤️</div>
     </div>
   </div>
 
-  <!-- Nhạc nền (có thể thay link mp3 bằng file của bạn). 
-       Nếu không muốn nhạc, bạn có thể xoá thẻ audio này. -->
   <audio id="bgMusic" loop preload="auto">
-    <!-- Bạn có thể thay src bằng file mp3 bạn thích -->
     <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2c6d2edcbb.mp3?filename=love-110624.mp3" type="audio/mpeg">
   </audio>
 
   <script>
-    // ====== Nội dung tỏ tình (bạn có thể sửa lại cho đúng câu chữ của bạn) ======
+    // ====== Nội dung tỏ tình ======
     const confessionText =
 `Anh không giỏi nói lời hoa mỹ…
 nhưng anh thật lòng.
@@ -222,33 +217,30 @@ Em có đồng ý làm người yêu anh không?`;
     const MSG_YES = "Em đồng ý";
     const MSG_NO  = "Em xin lỗi anh nhưng hiện tại em không thể";
 
-    // Cách 1: dùng query ?text=...
-    // Lưu ý: một số máy/phiên bản Messenger có thể không auto-fill 100%,
-    // nhưng đa số sẽ nhận.
     function goMessenger(prefillText){
       const text = encodeURIComponent(prefillText);
+      // Nhiều máy nhận được prefill với ?text=
       window.location.href = `${messengerBase}?text=${text}`;
     }
 
     // ====== Typewriter ======
     const typebox = document.getElementById("typebox");
     const cursor = document.getElementById("cursor");
-
     let i = 0;
-    const speed = 22; // ms/char
+    const speed = 22;
 
     function typeNext(){
       if(i <= confessionText.length){
         typebox.textContent = confessionText.slice(0, i);
         i++;
-        requestAnimationFrame(() => setTimeout(typeNext, speed));
+        setTimeout(typeNext, speed);
       } else {
         cursor.style.display = "none";
       }
     }
     typeNext();
 
-    // ====== Hearts effect ======
+    // ====== Hearts ======
     const hearts = ["💖","💗","💓","💘","❤️","💕"];
     function spawnHeart(x, y){
       const h = document.createElement("div");
@@ -263,33 +255,69 @@ Em có đồng ý làm người yêu anh không?`;
       setTimeout(() => h.remove(), 3000);
     }
 
-    // Tim bay khi chạm/click
     document.addEventListener("pointerdown", (e) => {
       spawnHeart(e.clientX, e.clientY);
     });
 
-    // Tim bay tự động nhẹ
-    setInterval(() => {
+    const heartTimer = setInterval(() => {
       spawnHeart(Math.random() * window.innerWidth, window.innerHeight - 30);
     }, 700);
 
+    // ====== Music toggle ======
+    const musicToggle = document.getElementById("musicToggle");
+    const bgMusic = document.getElementById("bgMusic");
+    musicToggle.addEventListener("change", async () => {
+      try{
+        if(musicToggle.checked){
+          await bgMusic.play();
+        } else {
+          bgMusic.pause();
+        }
+      } catch(e){
+        // Một số trình duyệt chặn autoplay; người dùng cần bấm lần nữa.
+        console.log("Music play blocked:", e);
+      }
+    });
+
     // ====== Buttons ======
     const yesBtn = document.getElementById("yesBtn");
-    const noBtn = document.getElementById("noBtn");
+    const noBtn  = document.getElementById("noBtn");
     const btnArea = document.getElementById("btnArea");
 
     yesBtn.addEventListener("click", () => goMessenger(MSG_YES));
+    noBtn.addEventListener("click",  () => goMessenger(MSG_NO));
 
-    // Nút "Không đồng ý" chạy trốn khi rê chuột hoặc chạm gần
+    // Chỉ làm "chạy trốn" khi có chuột (desktop). Trên mobile vẫn bấm bình thường.
+    const isDesktopPointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
     function moveNoButton(){
       const areaRect = btnArea.getBoundingClientRect();
-      const btnRect = noBtn.getBoundingClientRect();
+      const btnRect  = noBtn.getBoundingClientRect();
 
-      const maxX = areaRect.width - btnRect.width;
-      const maxY = areaRect.height - btnRect.height;
+      const maxX = Math.max(0, areaRect.width  - btnRect.width);
+      const maxY = Math.max(0, areaRect.height - btnRect.height);
 
-      const x = Math.max(0, Math.min(maxX, Math.random() * maxX));
-      const y = Math.max(0, Math.min(maxY, Math.random() * maxY));
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
 
+      // Đặt left/top tương đối trong btnArea
       noBtn.style.left = x + "px";
-      noBtn.style.top = y
+      noBtn.style.top  = y + "px";
+    }
+
+    if(isDesktopPointer){
+      // chạy khi rê vào nút (mouseover) — vẫn click được nếu nhanh tay
+      noBtn.addEventListener("mouseover", moveNoButton);
+
+      // chạy khi con trỏ tiến gần vùng nút (giúp vui)
+      btnArea.addEventListener("mousemove", (e) => {
+        const r = noBtn.getBoundingClientRect();
+        const dx = (e.clientX - (r.left + r.width/2));
+        const dy = (e.clientY - (r.top  + r.height/2));
+        const dist = Math.hypot(dx, dy);
+        if(dist < 90) moveNoButton();
+      });
+    }
+  </script>
+</body>
+</html>
