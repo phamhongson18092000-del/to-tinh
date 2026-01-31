@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lời tỏ tình 💖</title>
+  <style>
+    :root{
+      --bg1:#ff9a9e;
+      --bg2:#fad0c4;
+      --card:#ffffff;
+      --text:#2b2b2b;
+      --muted:#666;
+      --yes:#ff4b5c;
+      --no:#cfcfcf;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      overflow:hidden;
+    }
+    .wrap{
+      width:min(520px, 92vw);
+      background:rgba(255,255,255,0.65);
+      border:1px solid rgba(255,255,255,0.45);
+      backdrop-filter: blur(10px);
+      border-radius:22px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+      padding:22px;
+      position:relative;
+    }
+    .card{
+      background:var(--card);
+      border-radius:18px;
+      padding:22px 18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+    }
+    h1{
+      margin:0 0 10px;
+      font-size:28px;
+      color:var(--yes);
+      letter-spacing:0.2px;
+    }
+    .sub{
+      margin:0 0 18px;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .typebox{
+      font-size:17px;
+      line-height:1.7;
+      min-height:160px;
+      white-space:pre-wrap;
+    }
+    .cursor{
+      display:inline-block;
+      width:8px;
+      height:18px;
+      background:rgba(0,0,0,0.25);
+      margin-left:4px;
+      transform: translateY(3px);
+      animation: blink .9s infinite;
+    }
+    @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:.1} }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      margin-top:16px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .btns{
+      position:relative;
+      width:100%;
+      margin-top:16px;
+      height:74px;
+    }
+    button{
+      border:none;
+      border-radius:999px;
+      padding:12px 16px;
+      font-size:16px;
+      cursor:pointer;
+      transition: transform .15s, box-shadow .15s, filter .15s;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:hover{ transform: translateY(-2px); filter: brightness(1.02); }
+    button:active{ transform: translateY(0px) scale(0.99); }
+
+    .yes{
+      background:var(--yes);
+      color:#fff;
+      position:absolute;
+      left:0;
+      top:0;
+      width:48%;
+      height:52px;
+    }
+    .no{
+      background:var(--no);
+      color:#333;
+      position:absolute;
+      right:0;
+      top:0;
+      width:48%;
+      height:52px;
+    }
+
+    .mini{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .toggle{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,0.7);
+      border:1px solid rgba(0,0,0,0.06);
+      border-radius:999px;
+      padding:8px 10px;
+    }
+    .toggle input{ transform: scale(1.1); }
+
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:#777;
+      text-align:center;
+    }
+
+    /* hearts */
+    .heart{
+      position:fixed;
+      left:0;
+      top:0;
+      font-size:18px;
+      pointer-events:none;
+      animation: floatUp 2.8s linear forwards;
+      opacity:0.95;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.12));
+    }
+    @keyframes floatUp{
+      0%   { transform: translate(var(--x), var(--y)) scale(0.9); opacity:0.0;}
+      10%  { opacity:0.95; }
+      100% { transform: translate(calc(var(--x) + var(--drift)), calc(var(--y) - 280px)) scale(1.35); opacity:0; }
+    }
+
+    /* small footer */
+    .foot{
+      margin-top:14px;
+      text-align:center;
+      font-size:12px;
+      color:rgba(0,0,0,0.45);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Gửi em ❤️</h1>
+      <p class="sub">Anh có một điều muốn nói…</p>
+
+      <div class="typebox" id="typebox"></div><span class="cursor" id="cursor"></span>
+
+      <div class="controls">
+        <div class="mini">
+          <span>✨ Tip:</span>
+          <span>chạm màn hình để tim bay</span>
+        </div>
+
+        <label class="toggle" title="Bật/tắt nhạc nền">
+          <input id="musicToggle" type="checkbox">
+          <span>Nhạc nền</span>
+        </label>
+      </div>
+
+      <div class="btns" id="btnArea">
+        <button class="yes" id="yesBtn">💖 Đồng ý</button>
+        <button class="no" id="noBtn">💔 Không đồng ý</button>
+      </div>
+
+      <div class="hint">Nếu em bấm “Không đồng ý” mà nó chạy… thì đó là vì anh… không muốn nghe 😄</div>
+      <div class="foot">Made with ❤️</div>
+    </div>
+  </div>
+
+  <!-- Nhạc nền (có thể thay link mp3 bằng file của bạn). 
+       Nếu không muốn nhạc, bạn có thể xoá thẻ audio này. -->
+  <audio id="bgMusic" loop preload="auto">
+    <!-- Bạn có thể thay src bằng file mp3 bạn thích -->
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2c6d2edcbb.mp3?filename=love-110624.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // ====== Nội dung tỏ tình (bạn có thể sửa lại cho đúng câu chữ của bạn) ======
+    const confessionText =
+`Anh không giỏi nói lời hoa mỹ…
+nhưng anh thật lòng.
+
+Mỗi ngày trôi qua anh đều nghĩ về em nhiều hơn một chút.
+Anh không hứa sẽ hoàn hảo,
+nhưng anh hứa sẽ luôn chân thành và nghiêm túc.
+
+Em có đồng ý làm người yêu anh không?`;
+
+    // ====== Messenger redirect ======
+    const messengerBase = "https://m.me/minneh.18";
+    const MSG_YES = "Em đồng ý";
+    const MSG_NO  = "Em xin lỗi anh nhưng hiện tại em không thể";
+
+    // Cách 1: dùng query ?text=...
+    // Lưu ý: một số máy/phiên bản Messenger có thể không auto-fill 100%,
+    // nhưng đa số sẽ nhận.
+    function goMessenger(prefillText){
+      const text = encodeURIComponent(prefillText);
+      window.location.href = `${messengerBase}?text=${text}`;
+    }
+
+    // ====== Typewriter ======
+    const typebox = document.getElementById("typebox");
+    const cursor = document.getElementById("cursor");
+
+    let i = 0;
+    const speed = 22; // ms/char
+
+    function typeNext(){
+      if(i <= confessionText.length){
+        typebox.textContent = confessionText.slice(0, i);
+        i++;
+        requestAnimationFrame(() => setTimeout(typeNext, speed));
+      } else {
+        cursor.style.display = "none";
+      }
+    }
+    typeNext();
+
+    // ====== Hearts effect ======
+    const hearts = ["💖","💗","💓","💘","❤️","💕"];
+    function spawnHeart(x, y){
+      const h = document.createElement("div");
+      h.className = "heart";
+      h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+      const drift = (Math.random() * 140 - 70) + "px";
+      h.style.setProperty("--x", (x - 8) + "px");
+      h.style.setProperty("--y", (y - 12) + "px");
+      h.style.setProperty("--drift", drift);
+      h.style.fontSize = (16 + Math.random() * 14) + "px";
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 3000);
+    }
+
+    // Tim bay khi chạm/click
+    document.addEventListener("pointerdown", (e) => {
+      spawnHeart(e.clientX, e.clientY);
+    });
+
+    // Tim bay tự động nhẹ
+    setInterval(() => {
+      spawnHeart(Math.random() * window.innerWidth, window.innerHeight - 30);
+    }, 700);
+
+    // ====== Buttons ======
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const btnArea = document.getElementById("btnArea");
+
+    yesBtn.addEventListener("click", () => goMessenger(MSG_YES));
+
+    // Nút "Không đồng ý" chạy trốn khi rê chuột hoặc chạm gần
+    function moveNoButton(){
+      const areaRect = btnArea.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+
+      const maxX = areaRect.width - btnRect.width;
+      const maxY = areaRect.height - btnRect.height;
+
+      const x = Math.max(0, Math.min(maxX, Math.random() * maxX));
+      const y = Math.max(0, Math.min(maxY, Math.random() * maxY));
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y
